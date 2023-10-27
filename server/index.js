@@ -42,7 +42,32 @@ app.post('/api/register', async (req, res) => {
     })
     res.send(user)
   } catch (err) {
-    res.json({ error: err.message })
+    res.status(422).json({ error: err.message })
+  }
+})
+
+app.post('/api/login', async (req, res) => {
+  const { email, password } = req.body
+
+  try {
+    // fetching user details from db
+    const user = await User.findOne({
+      email,
+    })
+    if (user) {
+      // comparing password used for login with registered encrypted password
+      const passwordOk = bcrypt.compareSync(password, user.password)
+      if (passwordOk) {
+        res.json({ isLoggedIn: true, message: 'Successfully LoggedIn' })
+      } else {
+        res.status(422).json({
+          isLoggedIn: false,
+          message: 'Login Failed, Wrong passsword',
+        })
+      }
+    }
+  } catch (err) {
+    res.status(422).json({ isLoggedIn: false, error: 'Something went wrong' })
   }
 })
 
