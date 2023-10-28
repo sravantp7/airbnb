@@ -7,6 +7,8 @@ require('dotenv').config()
 const bcrypt = require('bcryptjs') // for password encryption
 const jwt = require('jsonwebtoken')
 
+const FRONTEND_URL = process.env.FRONTEND_URL
+
 const bcryptSalt = bcrypt.genSaltSync(10)
 
 // models
@@ -15,7 +17,7 @@ const User = require('./models/User') // importing UserModel
 app.use(
   cors({
     credentials: true,
-    origin: 'http://localhost:5173',
+    origin: FRONTEND_URL || 'http://127.0.0.1:5173' || 'http://localhost:5173',
   })
 )
 
@@ -49,7 +51,7 @@ app.post('/api/register', async (req, res) => {
       })
 
       user.password = undefined // setting password inside user to undefined
-      res.json(user) // sending entire user data to client
+      res.status(200).json(user) // sending entire user data to client
     }
   } catch (err) {
     res.status(422).json({ error: err.message })
@@ -77,6 +79,7 @@ app.post('/api/login', async (req, res) => {
     if (user) {
       // comparing password used for login with registered encrypted password
       const passwordOk = bcrypt.compareSync(password, user.password)
+
       if (passwordOk) {
         // Creating a JWT token
         const jwtToken = jwt.sign(
@@ -85,15 +88,18 @@ app.post('/api/login', async (req, res) => {
           { expiresIn: '1h' } // adding expire time to token
         )
 
-        res.status(200).json({
-          isLoggedIn: true,
-          message: 'Successfully LoggedIn',
-          jwtToken,
-        })
+        res
+          .status(200)
+          .cookie('token', jwtToken) // attaching token to response header
+          .json({
+            isLoggedIn: true,
+            message: 'Successfully LoggedIn',
+            jwtToken,
+          })
       } else {
         res.status(422).json({
           isLoggedIn: false,
-          message: 'Login Failed, Wrong passsword',
+          message: 'Login Failed, Wrong password',
         })
       }
     }
