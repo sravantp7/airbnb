@@ -6,6 +6,7 @@ const PORT = 5000
 require('dotenv').config()
 const bcrypt = require('bcryptjs') // for password encryption
 const jwt = require('jsonwebtoken')
+const cookieParser = require('cookie-parser')
 
 const FRONTEND_URL = process.env.FRONTEND_URL
 
@@ -22,6 +23,9 @@ app.use(
 )
 
 app.use(express.json())
+
+// For parsing the cookie in the request so that we can take cookie out from the request header
+app.use(cookieParser())
 
 // Connection
 mongoose
@@ -88,12 +92,14 @@ app.post('/api/login', async (req, res) => {
           { expiresIn: '1h' } // adding expire time to token
         )
 
+        user.password = undefined
         res
           .status(200)
-          .cookie('token', jwtToken) // attaching token to response header
+          .cookie('token', jwtToken) // sending token to client through cookie
           .json({
             isLoggedIn: true,
             message: 'Successfully LoggedIn',
+            user,
             jwtToken,
           })
       } else {
@@ -105,6 +111,28 @@ app.post('/api/login', async (req, res) => {
     }
   } catch (err) {
     res.status(422).json({ isLoggedIn: false, error: 'Something went wrong' })
+  }
+})
+
+// This API is used to fetch the user details when he/she load/ refresh the webiste
+// it is based on the cookie
+app.get('/api/profile', (req, res) => {
+  try {
+    const { token } = req.cookies // taking out cookie from the request
+
+    // verifying the cookie, user represents the payload which we actually encoded
+    if (token) {
+      jwt.verify(token, process.env.JWT_SECRET_TOKEN, {}, (err, user) => {
+        if (err) {
+          throw err
+        }
+        res.json({ name: user.name, email: user.email }) // sending user payload back to client
+      })
+    } else {
+      res.send('no cookie')
+    }
+  } catch (error) {
+    res.json({ error: error.message })
   }
 })
 
