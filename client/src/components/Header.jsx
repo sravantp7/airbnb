@@ -1,6 +1,9 @@
 import { Link } from 'react-router-dom'
+import { useUserContext } from '../context/UserContext'
 
 function Header() {
+  const { user } = useUserContext()
+
   return (
     <header className="flex items-center justify-between">
       {/* Logo section */}
@@ -84,6 +87,7 @@ function Header() {
             />
           </svg>
         </div>
+        {user && user.name && <span>{user.name}</span>}
       </Link>
     </header>
   )

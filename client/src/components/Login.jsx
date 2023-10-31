@@ -1,6 +1,7 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, Navigate } from 'react-router-dom'
 import axios from 'axios'
+import { useUserContext } from '../context/UserContext'
 
 const SERVER_URL = import.meta.env.VITE_SERVER_URL
 
@@ -8,6 +9,9 @@ function Login() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [isLogging, setIsLogging] = useState(false)
+  const [loggedIn, setLoggedIn] = useState(false) // state used to track whether user is logged in or not
+
+  const { setUser } = useUserContext()
 
   async function userLogin(e) {
     e.preventDefault()
@@ -19,12 +23,23 @@ function Login() {
       })
       setIsLogging(false)
       if (res.data) {
-        alert('Successfully LoggedIn')
+        alert('Successfully Loggedin')
+        // setting user context state by the logged in user details
+        setUser(res.data.user)
+        // emptying login form after login
+        setEmail('')
+        setPassword('')
+        setLoggedIn(true)
       }
     } catch (err) {
       alert('Login Failed, Please check your email & password')
       setIsLogging(false)
     }
+  }
+
+  if (loggedIn) {
+    // if successfully logged in then redirect to homepage
+    return <Navigate to={'/'} />
   }
 
   return (
