@@ -136,6 +136,12 @@ app.get('/api/profile', (req, res) => {
   }
 })
 
+// This api end point will allow user to logout
+// It will reset the cookie to empty value
+app.post('/api/logout', (req, res) => {
+  res.cookie('token', '').json('successfully logged out')
+})
+
 app.get('*', (req, res) => {
   res.send('Invalid Request')
 })
