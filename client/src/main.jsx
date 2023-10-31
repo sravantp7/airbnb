@@ -11,6 +11,7 @@ import {
 import IndexPage from './components/IndexPage.jsx'
 import Login from './components/Login.jsx'
 import Register from './components/Register.jsx'
+import AccountPage from './components/AccountPage.jsx'
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -18,6 +19,7 @@ const router = createBrowserRouter(
       <Route path="" element={<IndexPage />} />
       <Route path="login" element={<Login />} />
       <Route path="register" element={<Register />} />
+      <Route path="account/:subpage?" element={<AccountPage />} />
       <Route path="about" element={<div>Login</div>} />
       <Route path="*" element={<div>Page Not Found</div>} />
     </Route>

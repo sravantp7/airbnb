@@ -54,7 +54,7 @@ function Header() {
 
       {/* User section */}
       <Link
-        to={'/login'}
+        to={user && user.name ? '/account' : '/login'}
         className="flex items-center gap-2 border border-gray-300 rounded-full px-4 py-2 overflow-hidden"
       >
         <span>
