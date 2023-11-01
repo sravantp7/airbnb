@@ -7,6 +7,10 @@ require('dotenv').config()
 const bcrypt = require('bcryptjs') // for password encryption
 const jwt = require('jsonwebtoken')
 const cookieParser = require('cookie-parser')
+const imageDownload = require('image-downloader')
+
+// routes
+const placeRoute = require('./routes/PlaceRoute')
 
 const FRONTEND_URL = process.env.FRONTEND_URL
 
@@ -26,6 +30,9 @@ app.use(express.json())
 
 // For parsing the cookie in the request so that we can take cookie out from the request header
 app.use(cookieParser())
+
+// using custom route
+app.use('/api/places', placeRoute)
 
 // Connection
 mongoose
@@ -140,6 +147,22 @@ app.get('/api/profile', (req, res) => {
 // It will reset the cookie to empty value
 app.post('/api/logout', (req, res) => {
   res.cookie('token', '').json('successfully logged out')
+})
+
+// upload image by link, using image-downloader package to download the image and saving it into uploads folder
+app.post('/api/upload-image-link', async (req, res) => {
+  try {
+    const { imageURL } = req.body
+    let newName = Date.now() + '.jpg'
+    const options = {
+      url: imageURL,
+      dest: __dirname + '/uploads/' + newName,
+    }
+    await imageDownload.image(options)
+    res.send('Image uploaded successfully')
+  } catch (err) {
+    res.status(404).send('Failed to download image')
+  }
 })
 
 app.get('*', (req, res) => {
