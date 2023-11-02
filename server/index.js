@@ -8,6 +8,8 @@ const bcrypt = require('bcryptjs') // for password encryption
 const jwt = require('jsonwebtoken')
 const cookieParser = require('cookie-parser')
 const imageDownload = require('image-downloader')
+const multer = require('multer') // for file parsing from the request with content type - multipart/form-data
+const fs = require('fs')
 
 // routes
 const placeRoute = require('./routes/PlaceRoute')
@@ -33,6 +35,9 @@ app.use(cookieParser())
 
 // using custom route
 app.use('/api/places', placeRoute)
+
+// for serving images in the uploads folder as static files to client, [ip:port/uploads/imagename.jpg]
+app.use('/uploads', express.static(__dirname + '/uploads'))
 
 // Connection
 mongoose
@@ -153,15 +158,32 @@ app.post('/api/logout', (req, res) => {
 app.post('/api/upload-image-link', async (req, res) => {
   try {
     const { imageURL } = req.body
-    let newName = Date.now() + '.jpg'
+    let newName = 'airbnb' + Date.now() + '.jpg'
     const options = {
       url: imageURL,
       dest: __dirname + '/uploads/' + newName,
     }
     await imageDownload.image(options)
-    res.send('Image uploaded successfully')
+    res.json(newName)
   } catch (err) {
-    res.status(404).send('Failed to download image')
+    res.status(404).send('Failed to upload the image')
+  }
+})
+
+const photosMiddleware = multer({ dest: 'uploads/' }) // using multer middleware
+
+app.post('/api/uploads', photosMiddleware.array('photos', 50), (req, res) => {
+  try {
+    for (let i = 0; i < req.files.length; i++) {
+      const { path } = req.files[i]
+      fs.renameSync(
+        path,
+        __dirname + '/uploads/' + 'airbnb' + Date.now() + '.jpg'
+      )
+    }
+    res.json(req.files)
+  } catch (err) {
+    res.status(404).json('Failed to upload the image')
   }
 })
 
