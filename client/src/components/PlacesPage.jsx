@@ -1,8 +1,72 @@
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useParams } from 'react-router-dom'
+import axios from 'axios'
+
+const SERVER_URL = import.meta.env.VITE_SERVER_URL
 
 function PlacesPage() {
   const { action } = useParams()
+
+  // states
+  const [title, setTitle] = useState('')
+  const [address, setAddress] = useState('')
+  const [addedPhotos, setAddedPhotos] = useState([])
+  const [photoLink, setPhotoLink] = useState('')
+  const [description, setDescription] = useState('')
+  const [perks, setPerks] = useState([])
+  const [extraInfo, setExtraInfo] = useState('')
+  const [checkIn, setCheckIn] = useState('')
+  const [checkOut, setCheckOut] = useState('')
+  const [maxGuests, setMaxGuests] = useState(1)
+
+  function handleSubmit(e) {
+    e.preventDefault()
+  }
+
+  // function that sends the image url to server
+  async function addPhotoByLink(e) {
+    e.preventDefault()
+
+    if (!photoLink) return
+
+    try {
+      // destructuring data from res and renaming it into filename
+      const { data: filename } = await axios.post(
+        `${SERVER_URL}/api/upload-image-link`,
+        {
+          imageURL: photoLink,
+        }
+      )
+      // storing filename inside array
+      setAddedPhotos((prev) => [...prev, filename])
+    } catch (err) {
+      console.error(err.message)
+    } finally {
+      setPhotoLink('')
+    }
+  }
+
+  // function for uploading files from device
+  async function uploadPhoto(e) {
+    try {
+      const files = e.target.files
+      const data = new FormData()
+      data.set('photos', files)
+
+      const { data: filename } = await axios.post(
+        `${SERVER_URL}/api/uploads`,
+        data,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        }
+      )
+    } catch (err) {
+      console.error(err.message)
+    }
+  }
 
   return (
     <div>
@@ -32,7 +96,7 @@ function PlacesPage() {
       )}
       {action === 'new' && (
         <div className="">
-          <form>
+          <form onSubmit={handleSubmit}>
             <label htmlFor="title" className="font-bold">
               Title
             </label>
@@ -40,23 +104,47 @@ function PlacesPage() {
               type="text"
               id="title"
               placeholder="title, eg: My lovely apt"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
             />
             <label htmlFor="address" className="font-bold">
               Address
             </label>
-            <input type="text" id="address" placeholder="address" />
+            <input
+              type="text"
+              id="address"
+              placeholder="address"
+              value={address}
+              onChange={(e) => setAddress(e.target.value)}
+            />
             <p className="font-bold">Photos</p>
             <div className="flex gap-2 mb-2">
               <input
                 type="text"
                 placeholder="add image using link..."
-                className=""
+                value={photoLink}
+                onChange={(e) => setPhotoLink(e.target.value)}
               />
-              <button className="px-4 rounded-lg">Add&nbsp;photo</button>
+              <button className="px-4 rounded-lg" onClick={addPhotoByLink}>
+                Add&nbsp;photo
+              </button>
             </div>
             <p className="text-gray-400">Upload image from device...</p>
-            <div className="mt-2 grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
-              <button className="border bg-transparent rounded-2xl p-8 text-2xl flex justify-center items-center gap-1">
+            <div className="mt-2 grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
+              {/* Rendering uploaded images */}
+              {addedPhotos.length > 0 &&
+                addedPhotos.map((link) => (
+                  <div key={link}>
+                    <img
+                      src={`${SERVER_URL}/uploads/${link}`}
+                      alt="img"
+                      className="rounded-2xl"
+                    />
+                  </div>
+                ))}
+              <label className="border bg-transparent rounded-2xl p-8 text-2xl flex justify-center items-center gap-1 cursor-pointer">
+                {/* select file from the device */}
+                <input type="file" className="hidden" onChange={uploadPhoto} />
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   fill="none"
@@ -72,7 +160,7 @@ function PlacesPage() {
                   />
                 </svg>
                 <span>Upload</span>
-              </button>
+              </label>
             </div>
             <div className="mt-2 font-bold">
               <label htmlFor="description">Description</label>
@@ -82,6 +170,8 @@ function PlacesPage() {
                 cols="50"
                 rows="10"
                 placeholder="description here..."
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
               ></textarea>
             </div>
             <div>
@@ -200,21 +290,45 @@ function PlacesPage() {
             <div className="mt-4">
               <p className="font-bold">Extra Info</p>
               <p className="text-gray-500">House rules, etc..</p>
-              <textarea className="border rounded-lg" cols="50" rows="10" />
+              <textarea
+                className="border rounded-lg"
+                cols="50"
+                rows="10"
+                value={extraInfo}
+                onChange={(e) => setExtraInfo(e.target.value)}
+              />
             </div>
             <p className="font-bold">Check In & Out time</p>
             <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-2 mb-2">
               <div>
                 <label htmlFor="checkin">Check In</label>
-                <input type="text" id="checkin" placeholder="14:00" />
+                <input
+                  type="text"
+                  id="checkin"
+                  placeholder="14:00"
+                  value={checkIn}
+                  onChange={(e) => setCheckIn(e.target.value)}
+                />
               </div>
               <div>
                 <label htmlFor="checkout">Check Out</label>
-                <input type="text" id="checkout" placeholder="22:00" />
+                <input
+                  type="text"
+                  id="checkout"
+                  placeholder="22:00"
+                  value={checkOut}
+                  onChange={(e) => setCheckOut(e.target.value)}
+                />
               </div>
               <div>
                 <label htmlFor="guests">Max No.of Guests</label>
-                <input type="text" id="guests" placeholder="2" />
+                <input
+                  type="text"
+                  id="guests"
+                  placeholder="2"
+                  value={maxGuests}
+                  onChange={(e) => setMaxGuests(e.target.value)}
+                />
               </div>
             </div>
             <button className="primary">Save</button>
