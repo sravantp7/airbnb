@@ -12,7 +12,7 @@ const multer = require('multer') // for file parsing from the request with conte
 const fs = require('fs')
 
 // routes
-const placeRoute = require('./routes/PlaceRoute')
+const placeRouter = require('./routes/PlaceRouter')
 
 const FRONTEND_URL = process.env.FRONTEND_URL
 
@@ -33,8 +33,8 @@ app.use(express.json())
 // For parsing the cookie in the request so that we can take cookie out from the request header
 app.use(cookieParser())
 
-// using custom route
-app.use('/api/places', placeRoute)
+// using custom route for adding new places to db
+app.use('/api/places', placeRouter)
 
 // for serving images in the uploads folder as static files to client, [ip:port/uploads/imagename.jpg]
 app.use('/uploads', express.static(__dirname + '/uploads'))
@@ -101,7 +101,7 @@ app.post('/api/login', async (req, res) => {
         const jwtToken = jwt.sign(
           { id: user._id, name: user.name, email: user.email }, // payload
           process.env.JWT_SECRET_TOKEN, // secret key
-          { expiresIn: '1h' } // adding expire time to token
+          { expiresIn: '2h' } // adding expire time to token
         )
 
         user.password = undefined
@@ -170,18 +170,20 @@ app.post('/api/upload-image-link', async (req, res) => {
   }
 })
 
-const photosMiddleware = multer({ dest: 'uploads/' }) // using multer middleware
+const photosMiddleware = multer({ dest: 'uploads/' }) // using multer middleware to handle multipart/form-data
 
 app.post('/api/uploads', photosMiddleware.array('photos', 50), (req, res) => {
   try {
+    const uploadedFiles = []
     for (let i = 0; i < req.files.length; i++) {
       const { path } = req.files[i]
-      fs.renameSync(
-        path,
-        __dirname + '/uploads/' + 'airbnb' + Date.now() + '.jpg'
-      )
+
+      // creating new file for saving it into the uploads file
+      let newFileName = 'airbnb' + Date.now() + '.jpg'
+      fs.renameSync(path, __dirname + '/uploads/' + newFileName) // renaming file with new name
+      uploadedFiles.push(newFileName) // stroing new name in an array and this will send to client, by using this name client can access the photo
     }
-    res.json(req.files)
+    res.json(uploadedFiles)
   } catch (err) {
     res.status(404).json('Failed to upload the image')
   }
