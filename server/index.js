@@ -117,7 +117,7 @@ app.post('/api/login', async (req, res) => {
       } else {
         res.status(422).json({
           isLoggedIn: false,
-          message: 'Login Failed, Wrong password',
+          message: 'Login Failed, Invalid password',
         })
       }
     }

@@ -19,8 +19,6 @@ router.post('/', (req, res) => {
       maxGuests,
     } = req.body
 
-    console.log(addedPhotos)
-
     const { token } = req.cookies
 
     if (token) {
@@ -29,18 +27,8 @@ router.post('/', (req, res) => {
         if (err) {
           throw err
         }
-        if (
-          title &&
-          address //&&
-          // addedPhotos.length > 0 &&
-          // description &&
-          // perks.length > 0 &&
-          // extraInfo &&
-          // checkIn &&
-          // checkOut &&
-          // maxGuests
-        ) {
-          // creating new place in the db
+        if (title && address) {
+          // creating new place data in the db
           const placeDoc = await Place.create({
             owner: user.id,
             title,
@@ -61,6 +49,34 @@ router.post('/', (req, res) => {
     }
   } catch (err) {
     res.status(400).json({ error: err.message })
+  }
+})
+
+// api end point that will return all places added by the user
+// when he loads the my accommodation page, this helps to render the details
+router.get('/', (req, res) => {
+  try {
+    const { token } = req.cookies
+    if (token) {
+      jwt.verify(
+        token,
+        process.env.JWT_SECRET_TOKEN,
+        {},
+        async (err, userData) => {
+          if (err) {
+            throw err
+          } else {
+            // searching db for places where owner equals to user from the token (.find() return array of result)
+            const places = await Place.find({
+              owner: userData.id,
+            })
+            res.json(places)
+          }
+        }
+      )
+    }
+  } catch (err) {
+    res.status(400).send({ error: err.message })
   }
 })
 
