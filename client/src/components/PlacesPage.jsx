@@ -52,9 +52,12 @@ function PlacesPage() {
     try {
       const files = e.target.files
       const data = new FormData()
-      data.set('photos', files)
 
-      const { data: filename } = await axios.post(
+      for (let file of files) {
+        data.append('photos', file)
+      }
+
+      const { data: filenames } = await axios.post(
         `${SERVER_URL}/api/uploads`,
         data,
         {
@@ -63,8 +66,21 @@ function PlacesPage() {
           },
         }
       )
+      // adding file names which got by uploading from device to state for rendering
+      setAddedPhotos((prev) => [...prev, ...filenames])
     } catch (err) {
       console.error(err.message)
+    }
+  }
+
+  // function used to add selected perks to state
+  function handlePerks(e) {
+    const { checked, name } = e.target
+    if (checked) {
+      setPerks((prev) => [...prev, name])
+    } else {
+      // removing unselected perks by filtering through the array
+      setPerks((prev) => prev.filter((perk) => perk !== name))
     }
   }
 
@@ -134,17 +150,23 @@ function PlacesPage() {
               {/* Rendering uploaded images */}
               {addedPhotos.length > 0 &&
                 addedPhotos.map((link) => (
-                  <div key={link}>
+                  <div key={link} className="h-32 flex">
                     <img
                       src={`${SERVER_URL}/uploads/${link}`}
                       alt="img"
-                      className="rounded-2xl"
+                      className="rounded-2xl w-full object-cover"
                     />
                   </div>
                 ))}
+
               <label className="border bg-transparent rounded-2xl p-8 text-2xl flex justify-center items-center gap-1 cursor-pointer">
                 {/* select file from the device */}
-                <input type="file" className="hidden" onChange={uploadPhoto} />
+                <input
+                  type="file"
+                  className="hidden"
+                  onChange={uploadPhoto}
+                  multiple
+                />
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   fill="none"
@@ -184,7 +206,12 @@ function PlacesPage() {
                   htmlFor="wifi"
                   className="border shadow rounded-lg p-4 flex justify-start items-center gap-2 cursor-pointer"
                 >
-                  <input type="checkbox" id="wifi" />
+                  <input
+                    type="checkbox"
+                    name="wifi"
+                    id="wifi"
+                    onChange={handlePerks}
+                  />
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     fill="none"
@@ -205,7 +232,12 @@ function PlacesPage() {
                   htmlFor="free-parking"
                   className="border shadow rounded-lg p-4 flex justify-start items-center gap-2 cursor-pointer"
                 >
-                  <input type="checkbox" id="free-parking" />
+                  <input
+                    type="checkbox"
+                    name="parking"
+                    id="free-parking"
+                    onChange={handlePerks}
+                  />
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     fill="none"
@@ -226,7 +258,12 @@ function PlacesPage() {
                   htmlFor="pets"
                   className="border shadow rounded-lg p-4 flex justify-start items-center gap-2 cursor-pointer"
                 >
-                  <input type="checkbox" id="pets" />
+                  <input
+                    type="checkbox"
+                    id="pets"
+                    name="pets"
+                    onChange={handlePerks}
+                  />
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     fill="none"
@@ -247,7 +284,12 @@ function PlacesPage() {
                   htmlFor="tv"
                   className="border shadow rounded-lg p-4 flex justify-start items-center gap-2 cursor-pointer"
                 >
-                  <input type="checkbox" id="tv" />
+                  <input
+                    type="checkbox"
+                    id="tv"
+                    name="tv"
+                    onChange={handlePerks}
+                  />
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     fill="none"
@@ -268,7 +310,12 @@ function PlacesPage() {
                   htmlFor="private-entrance"
                   className="border shadow rounded-lg p-4 flex justify-start items-center gap-2 cursor-pointer"
                 >
-                  <input type="checkbox" id="private-entrance" />
+                  <input
+                    type="checkbox"
+                    id="private-entrance"
+                    name="entrance"
+                    onChange={handlePerks}
+                  />
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     fill="none"
