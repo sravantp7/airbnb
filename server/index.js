@@ -28,6 +28,7 @@ app.use(
   })
 )
 
+// middleware used to parse the request body
 app.use(express.json())
 
 // For parsing the cookie in the request so that we can take cookie out from the request header
