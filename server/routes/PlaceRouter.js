@@ -89,6 +89,59 @@ router
       res.status(400).json({ error: err.message })
     }
   })
+  .put((req, res) => {
+    try {
+      const {
+        id,
+        title,
+        address,
+        addedPhotos,
+        description,
+        perks,
+        extraInfo,
+        checkIn,
+        checkOut,
+        maxGuests,
+      } = req.body
+
+      const { token } = req.cookies
+
+      if (token) {
+        jwt.verify(
+          token,
+          process.env.JWT_SECRET_TOKEN,
+          {},
+          async (err, user) => {
+            if (err) {
+              throw err
+            } else {
+              const placeDoc = await Place.findById(id)
+              if (user.id != placeDoc.owner.toString()) {
+                res.status(400).json('Invalid User')
+              }
+              // setting the retrived data from db to new values
+              placeDoc.set({
+                owner: user.id,
+                title,
+                address,
+                photos: addedPhotos,
+                description,
+                perks,
+                extraInfo,
+                checkIn,
+                checkOut,
+                maxGuests,
+              })
+              placeDoc.save() // saving the changes
+              res.json(placeDoc)
+            }
+          }
+        )
+      }
+    } catch (err) {
+      res.status(400).json({ error: err.message })
+    }
+  })
 
 // end point to fetch place details using id
 router.get('/:id', (req, res) => {
