@@ -1,28 +1,27 @@
-import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { Link, Navigate } from 'react-router-dom'
 import { useParams } from 'react-router-dom'
 import axios from 'axios'
+import { v4 as uuidv4 } from 'uuid' // for generating unique key values
 
 const SERVER_URL = import.meta.env.VITE_SERVER_URL
 
 function PlacesPage() {
   const { action } = useParams()
+  const { id } = useParams()
 
   // states
   const [title, setTitle] = useState('')
   const [address, setAddress] = useState('')
   const [addedPhotos, setAddedPhotos] = useState([])
-  const [photoLink, setPhotoLink] = useState('')
+  const [photoLink, setPhotoLink] = useState('') // used to hold the image link
   const [description, setDescription] = useState('')
   const [perks, setPerks] = useState([])
   const [extraInfo, setExtraInfo] = useState('')
   const [checkIn, setCheckIn] = useState('')
   const [checkOut, setCheckOut] = useState('')
   const [maxGuests, setMaxGuests] = useState(1)
-
-  function handleSubmit(e) {
-    e.preventDefault()
-  }
+  const [places, setPlaces] = useState([]) // for holding added places by the user when loading in
 
   // function that sends the image url to server
   async function addPhotoByLink(e) {
@@ -84,41 +83,110 @@ function PlacesPage() {
     }
   }
 
+  // function for adding new places to db
+  async function addNewPlace(e) {
+    e.preventDefault()
+    const data = {
+      title,
+      address,
+      addedPhotos,
+      description,
+      perks,
+      extraInfo,
+      checkIn,
+      checkOut,
+      maxGuests,
+    }
+    // sending place data to the server
+    const res = await axios.post(`${SERVER_URL}/api/places`, data)
+  }
+
+  useEffect(() => {
+    async function fetchPlaceById() {
+      const res = await axios.get(`${SERVER_URL}/api/places/${id}`) // here id will be send as query params
+    }
+    if (id != undefined) {
+      fetchPlaceById()
+    }
+  }, [id])
+
+  // used to load all places which was added by the user when loading into the accommodation page
+  useEffect(() => {
+    async function loadPlaces() {
+      const { data: placeData } = await axios.get(`${SERVER_URL}/api/places`)
+      setPlaces(placeData)
+      console.log(placeData)
+    }
+    loadPlaces()
+  }, [])
+
   return (
     <div>
       {action !== 'new' && (
-        <div className="text-center mt-8">
-          <Link
-            to={'/account/places/new'}
-            className="bg-primary text-white px-4 py-2 rounded-full inline-flex gap-2"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              strokeWidth={1.5}
-              stroke="currentColor"
-              className="w-6 h-6"
+        <>
+          <div className="text-center mt-8">
+            <Link
+              to={'/account/places/new'}
+              className="bg-primary text-white px-4 py-2 rounded-full inline-flex gap-2"
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M12 4.5v15m7.5-7.5h-15"
-              />
-            </svg>
-            Add new place
-          </Link>
-        </div>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth={1.5}
+                stroke="currentColor"
+                className="w-6 h-6"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M12 4.5v15m7.5-7.5h-15"
+                />
+              </svg>
+              Add new place
+            </Link>
+          </div>
+
+          {/* Render already added places */}
+          <div className="mt-4">
+            {places.length > 0 &&
+              places.map((place) => (
+                <Link
+                  to={`/account/places/myplaces/${place._id}`}
+                  key={uuidv4()}
+                >
+                  <div className="border p-4 rounded-2xl flex gap-3 cursor-pointer">
+                    <div className="w-32 bg-gray-300">
+                      {place.photos.length > 0 && (
+                        <img
+                          // using static file access
+                          src={`${SERVER_URL}/uploads/${place.photos[0]}`}
+                          alt={place.title}
+                          className=""
+                        />
+                      )}
+                    </div>
+                    <div className="grow-0 shrink">
+                      <h2 className="text-xl font-bold">{place.title}</h2>
+                      <p className="text-md mt-3">{place.description}</p>
+                    </div>
+                  </div>
+                </Link>
+              ))}
+          </div>
+        </>
       )}
+
       {action === 'new' && (
         <div className="">
-          <form onSubmit={handleSubmit}>
+          <form onSubmit={addNewPlace}>
             <label htmlFor="title" className="font-bold">
               Title
             </label>
             <input
               type="text"
               id="title"
+              required
               placeholder="title, eg: My lovely apt"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
@@ -129,6 +197,7 @@ function PlacesPage() {
             <input
               type="text"
               id="address"
+              required
               placeholder="address"
               value={address}
               onChange={(e) => setAddress(e.target.value)}
@@ -152,6 +221,7 @@ function PlacesPage() {
                 addedPhotos.map((link) => (
                   <div key={link} className="h-32 flex">
                     <img
+                      // accessing static files
                       src={`${SERVER_URL}/uploads/${link}`}
                       alt="img"
                       className="rounded-2xl w-full object-cover"
@@ -338,7 +408,7 @@ function PlacesPage() {
               <p className="font-bold">Extra Info</p>
               <p className="text-gray-500">House rules, etc..</p>
               <textarea
-                className="border rounded-lg"
+                className="border rounded-lg px-2 py-1"
                 cols="50"
                 rows="10"
                 value={extraInfo}
