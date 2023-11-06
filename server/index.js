@@ -20,6 +20,7 @@ const bcryptSalt = bcrypt.genSaltSync(10)
 
 // models
 const User = require('./models/User') // importing UserModel
+const Place = require('./models/Place')
 
 app.use(
   cors({
@@ -187,6 +188,16 @@ app.post('/api/uploads', photosMiddleware.array('photos', 50), (req, res) => {
     res.json(uploadedFiles)
   } catch (err) {
     res.status(404).json('Failed to upload the image')
+  }
+})
+
+// this end point return all places added by different users (this allow frontend to render all places)
+app.get('/api/allplaces', async (req, res) => {
+  try {
+    const places = await Place.find() // fetching all available places from db
+    res.json(places)
+  } catch (err) {
+    res.status(404).json({ error: err.message })
   }
 })
 

@@ -49,6 +49,7 @@ router
         checkIn,
         checkOut,
         maxGuests,
+        price,
       } = req.body
 
       const { token } = req.cookies
@@ -77,6 +78,7 @@ router
                 checkIn,
                 checkOut,
                 maxGuests,
+                price,
               })
               res.json(placeDoc)
             } else {
@@ -89,6 +91,7 @@ router
       res.status(400).json({ error: err.message })
     }
   })
+  // updating already added place
   .put((req, res) => {
     try {
       const {
@@ -102,6 +105,7 @@ router
         checkIn,
         checkOut,
         maxGuests,
+        price,
       } = req.body
 
       const { token } = req.cookies
@@ -116,12 +120,12 @@ router
               throw err
             } else {
               const placeDoc = await Place.findById(id)
+
               if (user.id != placeDoc.owner.toString()) {
                 res.status(400).json('Invalid User')
               }
               // setting the retrived data from db to new values
               placeDoc.set({
-                owner: user.id,
                 title,
                 address,
                 photos: addedPhotos,
@@ -131,8 +135,9 @@ router
                 checkIn,
                 checkOut,
                 maxGuests,
+                price,
               })
-              placeDoc.save() // saving the changes
+              await placeDoc.save() // saving the changes
               res.json(placeDoc)
             }
           }
