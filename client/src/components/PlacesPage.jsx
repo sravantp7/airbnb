@@ -83,8 +83,10 @@ function PlacesPage() {
     }
   }
 
-  // function for adding new places to db
-  async function addNewPlace(e) {
+  // function for adding new place / updating existing place
+  // an existing place loads to th form when we have an id with it
+  // so if id there then update the content else add new place to the db
+  async function savePlace(e) {
     e.preventDefault()
     const data = {
       title,
@@ -97,13 +99,39 @@ function PlacesPage() {
       checkOut,
       maxGuests,
     }
-    // sending place data to the server
-    const res = await axios.post(`${SERVER_URL}/api/places`, data)
+
+    if (id) {
+      data.id = id // if id available then adding it with the data object
+      // update the existing place details (PUT)
+      await axios.put(`${SERVER_URL}/api/places`, data)
+    } else {
+      // add new place to the db
+      // sending place data to the server
+      await axios.post(`${SERVER_URL}/api/places`, data)
+    }
   }
 
+  console.log(addedPhotos)
+
+  async function removePhoto(e, filename) {
+    console.log(filename)
+    setAddedPhotos((prev) => prev.filter((file) => file != filename))
+  }
+
+  // when clicking on a specific place it will send a request to server with id to get its all details
+  // this will loads the details of the place to the form, from there we can edit the content of it
   useEffect(() => {
     async function fetchPlaceById() {
-      const res = await axios.get(`${SERVER_URL}/api/places/${id}`) // here id will be send as query params
+      const { data } = await axios.get(`${SERVER_URL}/api/places/${id}`) // here id will be send as query params
+      setTitle(data.title)
+      setAddress(data.address)
+      setAddedPhotos(data.photos)
+      setDescription(data.description)
+      setPerks(data.perks)
+      setExtraInfo(data.extraInfo)
+      setCheckIn(data.checkIn)
+      setCheckOut(data.checkOut)
+      setMaxGuests(data.maxGuests)
     }
     if (id != undefined) {
       fetchPlaceById()
@@ -115,7 +143,6 @@ function PlacesPage() {
     async function loadPlaces() {
       const { data: placeData } = await axios.get(`${SERVER_URL}/api/places`)
       setPlaces(placeData)
-      console.log(placeData)
     }
     loadPlaces()
   }, [])
@@ -151,18 +178,15 @@ function PlacesPage() {
           <div className="mt-4">
             {places.length > 0 &&
               places.map((place) => (
-                <Link
-                  to={`/account/places/myplaces/${place._id}`}
-                  key={uuidv4()}
-                >
+                <Link to={`/account/places/new/${place._id}`} key={uuidv4()}>
                   <div className="border p-4 rounded-2xl flex gap-3 cursor-pointer">
-                    <div className="w-32 bg-gray-300">
+                    <div className="w-32 bg-gray-300 rounded-xl">
                       {place.photos.length > 0 && (
                         <img
                           // using static file access
                           src={`${SERVER_URL}/uploads/${place.photos[0]}`}
                           alt={place.title}
-                          className=""
+                          className="rounded-xl"
                         />
                       )}
                     </div>
@@ -179,7 +203,7 @@ function PlacesPage() {
 
       {action === 'new' && (
         <div className="">
-          <form onSubmit={addNewPlace}>
+          <form onSubmit={savePlace}>
             <label htmlFor="title" className="font-bold">
               Title
             </label>
@@ -219,13 +243,34 @@ function PlacesPage() {
               {/* Rendering uploaded images */}
               {addedPhotos.length > 0 &&
                 addedPhotos.map((link) => (
-                  <div key={link} className="h-32 flex">
+                  <div key={link} className="h-32 flex relative">
                     <img
                       // accessing static files
                       src={`${SERVER_URL}/uploads/${link}`}
                       alt="img"
                       className="rounded-2xl w-full object-cover"
                     />
+
+                    {/* adding trash can icon for removing added photos */}
+                    <button
+                      onClick={(e) => removePhoto(e, link)}
+                      className="absolute bottom-1 right-1 cursor-pointer bg-black p-1 bg-opacity-50 rounded-xl"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        strokeWidth={1.5}
+                        stroke="currentColor"
+                        className="w-6 h-6 text-white"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"
+                        />
+                      </svg>
+                    </button>
                   </div>
                 ))}
 
@@ -233,9 +278,9 @@ function PlacesPage() {
                 {/* select file from the device */}
                 <input
                   type="file"
+                  multiple
                   className="hidden"
                   onChange={uploadPhoto}
-                  multiple
                 />
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -280,6 +325,7 @@ function PlacesPage() {
                     type="checkbox"
                     name="wifi"
                     id="wifi"
+                    checked={perks.includes('wifi')}
                     onChange={handlePerks}
                   />
                   <svg
@@ -306,6 +352,7 @@ function PlacesPage() {
                     type="checkbox"
                     name="parking"
                     id="free-parking"
+                    checked={perks.includes('parking')}
                     onChange={handlePerks}
                   />
                   <svg
@@ -332,6 +379,7 @@ function PlacesPage() {
                     type="checkbox"
                     id="pets"
                     name="pets"
+                    checked={perks.includes('pets')}
                     onChange={handlePerks}
                   />
                   <svg
@@ -358,6 +406,7 @@ function PlacesPage() {
                     type="checkbox"
                     id="tv"
                     name="tv"
+                    checked={perks.includes('tv')}
                     onChange={handlePerks}
                   />
                   <svg
@@ -384,6 +433,7 @@ function PlacesPage() {
                     type="checkbox"
                     id="private-entrance"
                     name="entrance"
+                    checked={perks.includes('entrance')}
                     onChange={handlePerks}
                   />
                   <svg

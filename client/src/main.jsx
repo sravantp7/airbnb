@@ -21,7 +21,7 @@ const router = createBrowserRouter(
       <Route path="register" element={<Register />} />
       <Route path="account/:subpage?" element={<AccountPage />} />
       <Route path="account/:subpage/:action" element={<AccountPage />} />
-      <Route path="account/:subpage/myplaces/:id" element={<AccountPage />} />
+      <Route path="account/:subpage/:action/:id" element={<AccountPage />} />
       <Route path="about" element={<div>Login</div>} />
       <Route path="*" element={<div>Page Not Found</div>} />
     </Route>
