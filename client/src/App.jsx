@@ -25,7 +25,7 @@ function App() {
 
   return (
     <UserProvider value={{ user, setUser }}>
-      <main className="p-4 flex flex-col min-h-screen">
+      <main className="py-4 px-8 flex flex-col min-h-screen">
         <Header />
         <Outlet />
       </main>
