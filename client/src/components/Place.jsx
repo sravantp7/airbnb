@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useParams } from 'react-router-dom'
 import axios from 'axios'
+import BookingWidget from './BookingWidget'
 
 const SERVER_URL = import.meta.env.VITE_SERVER_URL
 
@@ -208,7 +209,7 @@ function Place() {
             </div>
           </div>
           <hr className="w-[50%] my-4" />
-          <p className="font-medium text-xl mb-2">Extra details</p>
+          <p className="font-medium text-xl mb-4 underline">Information</p>
           <div className="grid grid-cols-2 relative">
             <div className="flex flex-col gap-2">
               <div className="flex gap-2">
@@ -266,82 +267,40 @@ function Place() {
                 </svg>
                 <div>Max No.of Guests : {place.maxGuests}</div>
               </div>
+              {/* perks details */}
+              <div>
+                <p className="font-medium text-xl mt-4 mb-2 underline">Perks</p>
+                {place?.perks?.length > 0 &&
+                  place.perks.map((perk) => (
+                    <div key={perk} className="flex items-center gap-2">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 24 24"
+                        fill="currentColor"
+                        className="w-5 h-5"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M8.603 3.799A4.49 4.49 0 0112 2.25c1.357 0 2.573.6 3.397 1.549a4.49 4.49 0 013.498 1.307 4.491 4.491 0 011.307 3.497A4.49 4.49 0 0121.75 12a4.49 4.49 0 01-1.549 3.397 4.491 4.491 0 01-1.307 3.497 4.491 4.491 0 01-3.497 1.307A4.49 4.49 0 0112 21.75a4.49 4.49 0 01-3.397-1.549 4.49 4.49 0 01-3.498-1.306 4.491 4.491 0 01-1.307-3.498A4.49 4.49 0 012.25 12c0-1.357.6-2.573 1.549-3.397a4.49 4.49 0 011.307-3.497 4.49 4.49 0 013.497-1.307zm7.007 6.387a.75.75 0 10-1.22-.872l-3.236 4.53L9.53 12.22a.75.75 0 00-1.06 1.06l2.25 2.25a.75.75 0 001.14-.094l3.75-5.25z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+
+                      <span>{perk[0].toUpperCase() + perk.slice(1)}</span>
+                    </div>
+                  ))}
+              </div>
+              {/* extra details added by the owner */}
+              <div>
+                <p className="font-medium text-xl mt-4 mb-2 underline">
+                  Extra Details
+                </p>
+                <p>{place.extraInfo}</p>
+              </div>
             </div>
 
-            {/* booking box */}
-            <div className="border-2 border-black rounded-xl max-w-[400px] shadow relative lg:top-[-50%] lg:left-[20%]">
-              <div id="top" className="flex justify-between p-4">
-                <div className="text-lg">
-                  <span className="font-medium">${place.price} </span>night
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="flex gap-1 items-center">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 24 24"
-                      fill="currentColor"
-                      className="w-6 h-6"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        d="M10.788 3.21c.448-1.077 1.976-1.077 2.424 0l2.082 5.007 5.404.433c1.164.093 1.636 1.545.749 2.305l-4.117 3.527 1.257 5.273c.271 1.136-.964 2.033-1.96 1.425L12 18.354 7.373 21.18c-.996.608-2.231-.29-1.96-1.425l1.257-5.273-4.117-3.527c-.887-.76-.415-2.212.749-2.305l5.404-.433 2.082-5.006z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
-                    <p>4.6</p>
-                  </div>
-                  <div className="text-gray-500">101 reviews</div>
-                </div>
-              </div>
-
-              {/* inputs */}
-              <div className="mx-2 flex flex-col gap-2 px-8">
-                <div className="flex gap-2 justify-evenly border shadow p-2 rounded-2xl">
-                  <label htmlFor="checkin" className="font-medium">
-                    CheckIn&nbsp;&nbsp;&nbsp;
-                  </label>
-                  <input type="date" className="bg-transparent" />
-                </div>
-                <div className="flex gap-2 justify-evenly border shadow p-2 rounded-2xl">
-                  <label htmlFor="checkout" className="font-medium">
-                    CheckOut
-                  </label>
-                  <input type="date" className="bg-transparent" />
-                </div>
-                {/* guests */}
-                {/* <div className="border shadow p-2 rounded-2xl"> */}
-                <input
-                  type="number"
-                  placeholder="no.of guests"
-                  min={1}
-                  max={`${place.maxGuests}`}
-                  className="bg-transparent outline-none p-2 border shadow rounded-2xl placeholder:px-1"
-                />
-                {/* </div> */}
-              </div>
-
-              <div className="max-w-[300px] mx-auto my-2">
-                <button className="primary">Book this place</button>
-              </div>
-              <div className="grid grid-cols-2 mx-8 my-4 text-gray-500">
-                <div>
-                  <p>${place.price} x 1 night</p>
-                  <p>Cleaning fee</p>
-                  <p>Service Fee</p>
-                  <p>Offer Price</p>
-                </div>
-                <div className="text-right">
-                  <p>${place.price}</p>
-                  <p>$20</p>
-                  <p>$40</p>
-                  <p>${place.price}</p>
-                </div>
-              </div>
-              <div className="w-[90%] mx-auto border-2 border-black mb-4"></div>
-              <div className="w-[200px] mx-auto text-center mb-3 font-medium text-xl">
-                Total : ${place.price}
-              </div>
-            </div>
+            {/* booking widget */}
+            <BookingWidget place={place} />
           </div>
         </div>
       )}
