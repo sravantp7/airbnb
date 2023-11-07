@@ -13,6 +13,7 @@ const fs = require('fs')
 
 // routes
 const placeRouter = require('./routes/PlaceRouter')
+const BookingRouter = require('./routes/BookingRouter')
 
 const FRONTEND_URL = process.env.FRONTEND_URL
 
@@ -37,6 +38,9 @@ app.use(cookieParser())
 
 // using custom route for adding new places to db
 app.use('/api/places', placeRouter)
+
+// booking routes
+app.use('/api/booking', BookingRouter)
 
 // for serving images in the uploads folder as static files to client, [ip:port/uploads/imagename.jpg]
 app.use('/uploads', express.static(__dirname + '/uploads'))

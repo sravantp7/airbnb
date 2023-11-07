@@ -149,23 +149,11 @@ router
   })
 
 // end point to fetch place details using id
-router.get('/:id', (req, res) => {
+router.get('/:id', async (req, res) => {
   try {
     const { id } = req.params
-    const { token } = req.cookies
-
-    // here this token we are not using to validate using, instead it helps to identify the user is logged in or not
-    if (token) {
-      jwt.verify(token, process.env.JWT_SECRET_TOKEN, {}, async (err, user) => {
-        if (err) {
-          throw err
-        }
-        const placeById = await Place.findOne({ _id: id }) // fetching the place details using id
-        res.json(placeById)
-      })
-    } else {
-      res.status(400).json('No valid token found')
-    }
+    const placeById = await Place.findOne({ _id: id }) // fetching the place details using id
+    res.json(placeById)
   } catch (error) {
     res.status(400).json({ err: error.message })
   }
