@@ -4,6 +4,7 @@ import { useUserContext } from '../context/UserContext'
 import { useParams, Link } from 'react-router-dom'
 import axios from 'axios'
 import PlacesPage from './PlacesPage'
+import BookingsPage from './BookingsPage'
 
 const SERVER_URL = import.meta.env.VITE_SERVER_URL
 
@@ -120,6 +121,7 @@ function AccountPage() {
       )}
       {/* Rendering places page */}
       {user && user.name && subpage === 'places' && <PlacesPage />}
+      {user && user.name && subpage === 'bookings' && <BookingsPage />}
     </div>
   )
 }

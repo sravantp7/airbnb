@@ -1,6 +1,89 @@
+import { useEffect, useState } from 'react'
+import { differenceInCalendarDays } from 'date-fns'
+import axios from 'axios'
+import { Navigate } from 'react-router-dom'
+import { useUserContext } from '../context/UserContext'
+
+const SERVER_URL = import.meta.env.VITE_SERVER_URL
+
 function BookingWidget({ place }) {
+  const [checkIn, setCheckIn] = useState('')
+  const [checkOut, setCheckOut] = useState('')
+  const [noOfGuests, setNoOfGuests] = useState('')
+  const [bookedDays, setBookedDays] = useState(0)
+  const [showForm, setShowForm] = useState(false)
+  const [redirect, setRedirect] = useState(false)
+
+  const { user } = useUserContext()
+
+  // states for user details
+  const [name, setName] = useState('')
+  const [email, setEmail] = useState('')
+  const [phone, setPhone] = useState('')
+
+  async function bookPlace() {
+    const totalPrice = place.price * bookedDays
+
+    if (!(name && email && phone)) {
+      alert('Please provide your details')
+      return
+    }
+    // checking if all characters are number or not
+    if (isNaN(phone)) {
+      alert('Please provide valid phone number')
+      return
+    }
+
+    // book place (send request to backend)
+    try {
+      const res = await axios.post(`${SERVER_URL}/api/bookings`, {
+        place: place._id,
+        checkIn,
+        checkOut,
+        noOfGuests,
+        name,
+        email,
+        phone,
+        price: totalPrice,
+      })
+
+      if (!res.data) {
+        alert('Please Login')
+        return
+      } else {
+        alert('Successfully Booked')
+        setRedirect(true)
+      }
+    } catch (err) {
+      console.error(err.message)
+    }
+  }
+
+  useEffect(() => {
+    setName(user.name)
+    setEmail(user.email)
+  }, [user])
+
+  useEffect(() => {
+    if (checkIn && checkOut) {
+      if (checkOut <= checkIn) {
+        setCheckOut('')
+        alert(`You can't set same / past date as checkout date`)
+        return
+      }
+      setBookedDays(
+        differenceInCalendarDays(new Date(checkOut), new Date(checkIn))
+      )
+    }
+  }, [checkIn, checkOut])
+
+  // redirecting to my bookings section after successfully booked a place
+  if (redirect) {
+    return <Navigate to={'/account/bookings'} />
+  }
+
   return (
-    <div className="border-2 border-black rounded-xl max-w-[400px] shadow relative lg:top-[-50%] lg:left-[20%] bg-white">
+    <div className="border-2 border-black rounded-xl max-w-[400px] shadow relative lg:top-[-40%] lg:left-[15%] bg-white">
       <div id="top" className="flex justify-between p-4">
         <div className="text-lg">
           <span className="font-medium">${place.price} </span>night
@@ -31,46 +114,121 @@ function BookingWidget({ place }) {
           <label htmlFor="checkin" className="font-medium">
             CheckIn&nbsp;&nbsp;&nbsp;
           </label>
-          <input type="date" className="bg-transparent" />
+          <input
+            type="date"
+            id="checkin"
+            className="bg-transparent"
+            value={checkIn}
+            onChange={(e) => setCheckIn(e.target.value)}
+            disabled={showForm}
+          />
         </div>
         <div className="flex gap-2 justify-evenly border shadow p-2 rounded-2xl">
           <label htmlFor="checkout" className="font-medium">
             CheckOut
           </label>
-          <input type="date" className="bg-transparent" />
+          <input
+            type="date"
+            id="checkout"
+            className="bg-transparent"
+            value={checkOut}
+            onChange={(e) => setCheckOut(e.target.value)}
+            disabled={showForm}
+          />
         </div>
 
         {/* guests */}
         <input
           type="number"
-          placeholder="no.of guests"
+          placeholder={`No.of Guests (max : ${place.maxGuests})`}
           min={1}
           max={`${place.maxGuests}`}
           className="bg-transparent outline-none p-2 border shadow rounded-2xl placeholder:px-1"
+          value={noOfGuests}
+          onChange={(e) => setNoOfGuests(e.target.value)}
+          disabled={showForm}
         />
       </div>
 
       {/* booking button */}
-      <div className="max-w-[300px] mx-auto my-2">
-        <button className="primary">Book this place</button>
+      <div className="max-w-[300px] mx-auto my-2 px-2">
+        <button
+          className="primary"
+          onClick={() => {
+            if (
+              !(checkIn && checkOut && noOfGuests) ||
+              noOfGuests > place.maxGuests
+            ) {
+              alert('Please provide valid details')
+              return
+            } else {
+              setShowForm(!showForm)
+            }
+          }}
+        >
+          {!showForm ? 'Confirm' : 'Edit'}
+        </button>
       </div>
-      <div className="grid grid-cols-2 mx-8 my-4 text-gray-500">
+
+      {!showForm && (
+        <div className="grid grid-cols-2 mx-8 my-4 text-gray-500">
+          <div>
+            <p>
+              ${place.price} x {bookedDays} night
+            </p>
+            <p>Cleaning fee</p>
+            <p>Service Fee</p>
+            <p>Offer Price</p>
+          </div>
+          <div className="text-right">
+            <p>${place.price * bookedDays}</p>
+            <p>{checkIn && checkOut ? '$20' : '$0'}</p>
+            <p>{checkIn && checkOut ? '$40' : '$0'}</p>
+            <p>{checkIn && checkOut ? '- $60' : '$0'}</p>
+          </div>
+        </div>
+      )}
+
+      {showForm && (
         <div>
-          <p>${place.price} x 1 night</p>
-          <p>Cleaning fee</p>
-          <p>Service Fee</p>
-          <p>Offer Price</p>
+          <div className="flex items-center gap-2 px-10">
+            <label htmlFor="name">Name:</label>
+            <input
+              type="text"
+              id="name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+            />
+          </div>
+          <div className="flex items-center gap-2 px-10">
+            <label htmlFor="email">Email:</label>
+            <input
+              type="text"
+              id="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+          </div>
+          <div className="flex items-center gap-2 px-10">
+            <label htmlFor="phone">Phone:</label>
+            <input
+              type="text"
+              id="phone"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+            />
+          </div>
+          <div className="max-w-[300px] mx-auto my-4 px-2">
+            <button className="primary" onClick={bookPlace}>
+              Book Place
+            </button>
+          </div>
         </div>
-        <div className="text-right">
-          <p>${place.price}</p>
-          <p>$20</p>
-          <p>$40</p>
-          <p>${place.price}</p>
-        </div>
-      </div>
+      )}
+
       <div className="w-[90%] mx-auto border-2 border-black mb-4"></div>
       <div className="w-[200px] mx-auto text-center mb-3 font-medium text-xl">
-        Total : ${place.price}
+        Total : ${place.price * bookedDays}
       </div>
     </div>
   )

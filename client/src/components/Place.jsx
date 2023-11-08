@@ -30,7 +30,7 @@ function Place() {
     return (
       <div className="min-w-full min-h-screen bg-white relative">
         <button
-          className="absolute right-[20%] top-6 rounded-full p-2"
+          className="fixed right-[17%] top-[12%] rounded-full p-2"
           onClick={() => setShowAllPhotos(false)}
         >
           <svg
@@ -52,7 +52,7 @@ function Place() {
               <img
                 key={photo}
                 src={`${SERVER_URL}/uploads/${photo}`}
-                className="w-[50%]"
+                className="w-[60%]"
               />
             ))}
         </div>
@@ -106,7 +106,6 @@ function Place() {
                   d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z"
                 />
               </svg>
-
               {place.address}
             </a>
           </div>
@@ -118,6 +117,7 @@ function Place() {
                 <img
                   src={`${SERVER_URL}/uploads/${place.photos[0]}`}
                   alt="img"
+                  className="rounded-l-xl"
                 />
               )}
             </div>
@@ -127,6 +127,7 @@ function Place() {
                   <img
                     src={`${SERVER_URL}/uploads/${place.photos[1]}`}
                     alt="img"
+                    className="rounded-tr-xl"
                   />
                 )}
               </div>
@@ -135,6 +136,7 @@ function Place() {
                   <img
                     src={`${SERVER_URL}/uploads/${place.photos[2]}`}
                     alt="img"
+                    className="rounded-br-xl"
                   />
                 )}
               </div>
