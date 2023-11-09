@@ -59,9 +59,12 @@ function BookingWidget({ place }) {
     }
   }
 
+  // used to auto populate user inthe booking form
   useEffect(() => {
-    setName(user.name)
-    setEmail(user.email)
+    if (user) {
+      setName(user.name)
+      setEmail(user.email)
+    }
   }, [user])
 
   useEffect(() => {
