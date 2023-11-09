@@ -9,17 +9,27 @@ const SERVER_URL = import.meta.env.VITE_SERVER_URL
 function BookingsPage() {
   const [bookings, setBookings] = useState([])
 
-  function cancelBooking(id) {
-    console.log(id)
+  async function cancelBooking(id) {
+    try {
+      const res = await axios.delete(`${SERVER_URL}/api/bookings/${id}`)
+      console.log(res.data)
+      await fetchBookings()
+      if (res.data) {
+        alert('Successfully cancelled the booking')
+      }
+    } catch (error) {
+      console.log(error.message)
+      alert('Something went wrong')
+    }
+  }
+
+  async function fetchBookings() {
+    const res = await axios.get(`${SERVER_URL}/api/bookings`)
+    setBookings(res.data)
   }
 
   // this will fetch all the bookings for the logged in user
   useEffect(() => {
-    async function fetchBookings() {
-      const res = await axios.get(`${SERVER_URL}/api/bookings`)
-      setBookings(res.data)
-    }
-
     fetchBookings()
   }, [])
 
@@ -97,6 +107,29 @@ function BookingsPage() {
                     <path
                       strokeLinecap="round"
                       strokeLinejoin="round"
+                      d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z"
+                    />
+                  </svg>
+                  <p>
+                    No.of Nights :{' '}
+                    {differenceInCalendarDays(
+                      new Date(booking.checkOut),
+                      new Date(booking.checkIn)
+                    )}
+                  </p>
+                </div>
+                <div className="flex gap-1">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth={1.5}
+                    stroke="currentColor"
+                    className="w-6 h-6"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
                       d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"
                     />
                   </svg>
@@ -119,29 +152,6 @@ function BookingsPage() {
                   </svg>
 
                   <p>Pirce: ${booking.price}</p>
-                </div>
-                <div className="flex gap-1">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    strokeWidth={1.5}
-                    stroke="currentColor"
-                    className="w-6 h-6"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z"
-                    />
-                  </svg>
-                  <p>
-                    No.of Nights :{' '}
-                    {differenceInCalendarDays(
-                      new Date(booking.checkOut),
-                      new Date(booking.checkIn)
-                    )}
-                  </p>
                 </div>
 
                 <button
