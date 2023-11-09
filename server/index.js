@@ -40,7 +40,7 @@ app.use(cookieParser())
 app.use('/api/places', placeRouter)
 
 // booking routes
-app.use('/api/booking', BookingRouter)
+app.use('/api/bookings', BookingRouter)
 
 // for serving images in the uploads folder as static files to client, [ip:port/uploads/imagename.jpg]
 app.use('/uploads', express.static(__dirname + '/uploads'))
