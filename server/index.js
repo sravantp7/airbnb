@@ -23,10 +23,26 @@ const bcryptSalt = bcrypt.genSaltSync(10)
 const User = require('./models/User') // importing UserModel
 const Place = require('./models/Place')
 
+const allowedOrigins = [
+  'http://127.0.0.1:5173',
+  'http://localhost:5173',
+  FRONTEND_URL,
+]
+
 app.use(
   cors({
     credentials: true,
-    origin: FRONTEND_URL || 'http://127.0.0.1:5173' || 'http://localhost:5173',
+    origin: (origin, callback) => {
+      if (!origin) return callback(null, true) // for mobile apps
+
+      if (allowedOrigins.indexOf(origin) === -1) {
+        let msg =
+          'The CORS policy for this site does not ' +
+          'allow access from the specified Origin.'
+        return callback(new Error(msg), false)
+      }
+      return callback(null, true)
+    },
   })
 )
 
