@@ -4,6 +4,13 @@
 
 ### Backend for airbnb project using Express.js, consists for various APIs that the frontend website can use to register, login, fetch all added places, Book new places and much more.
 
+### `.env` file configuration
+
+Rename `.env.example` file to `.env` and populate all fields with your values (for localsetup no need to provide FRONTEND_URL)
+
+1. `DB_CONNECTION_STRING` - Create a mongodb database and put its connection string in to this filed <br>
+2. `JWT_SECRET_TOKEN` - a secret token used while generating jwt tokens
+
 ### Installation
 
 1. Clone the repository
