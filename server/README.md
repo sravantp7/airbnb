@@ -17,7 +17,7 @@ Rename `.env.example` file to `.env` and populate all fields with your values (f
 
 ```bash
 git clone https://github.com/0xSravan03/airbnb.git
-cd airbnb/backend
+cd airbnb/server
 
 ```
 
