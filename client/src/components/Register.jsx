@@ -13,6 +13,10 @@ function Register() {
     e.preventDefault()
 
     try {
+      if (!(name && email && password)) {
+        alert('Please provide details to register')
+        return
+      }
       const res = await axios.post(`${SERVER_URL}/api/register`, {
         name,
         email,
