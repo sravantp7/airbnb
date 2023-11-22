@@ -9,7 +9,7 @@ React Frontend for airbnb application, where user can view all available places,
 1. Clone the repo
 
 ```bash
-    git clone https://github.com/0xSravan03/airbnb.git
+    git clone https://github.com/tpsravan99/airbnb.git
     cd airbnb/client
 ```
 
